@@ -1,0 +1,21 @@
+# 忽略编译产生的文件
+build/
+*.o
+*.obj
+*.so
+*.a
+*.exe
+# Kadath/Cmake 常产生的
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+# 忽略巨大的数据输出文件（保命关键！）
+*.dat
+*.txt
+*.csv
+output/
+# 忽略编辑器配置
+.vscode/
+.idea/
+.DS_Store
