@@ -19,13 +19,29 @@ int main(int argc, char** argv) {
     }
 #endif
 
+	// 配置区域：在此修改输入文件与扫描策略
+	const char* input_file = "bosinit.dat"; // 读取的初始解文件
+	int tar = 0;            // 0: 扫 omega；1: 扫 lambda
+	double step = 0.003;    // 每步增量（tar=1 默认可按需改为 1.0）
+	int number = 8;         // 迭代步数
+
+	if (tar==1 && number==8 && step==0.003) {
+		// 若切换到 lambda 扫描但未改参数，采用更合理的默认值
+		number = 2;
+		step = 1.0;
+	}
+
 	int kk ;
 	double omega ;
-  
-	FILE* fin = fopen (argv[1], "r") ;
+	double lambda = 0;
+
+	FILE* fin = fopen (input_file, "r") ;
 	Space_polar space(fin) ;
 	fread_be (&kk, sizeof(int), 1, fin) ;
 	fread_be (&omega, sizeof(double), 1, fin) ;
+	if (fread_be (&lambda, sizeof(double), 1, fin) != 1) {
+		lambda = 0.0; // 旧格式无 lambda
+	}
 	Scalar nu (space,fin) ;
 	Scalar incA (space, fin) ;
 	Scalar incB (space, fin) ;
@@ -42,14 +58,27 @@ int main(int argc, char** argv) {
 	parameters.set_m_quant() = kk ;
         phi.set_parameters() = parameters ;
 
-	int number = 8 ;
-	double step = 0.003 ; 
-	for (int kant=0 ; kant<number ; kant++) {
-		if (kant !=0)
-		omega -= step ;
+	int tar = 0; // 0: vary omega, 1: vary lambda
+	double step = 0.003;
+	int number = 8;
+	if (argc >= 3) tar = atoi(argv[2]);
+	if (argc >= 4) step = atof(argv[3]);
+	if (argc >= 5) number = atoi(argv[4]);
+	if (tar!=0 && tar!=1) tar=0;
+	if (tar==1 && number==8 && step==0.003) { number = 2; step = 1.0; }
 
-	if (rank==0)
-	  cout << "Computation with omega = " << omega << endl ;
+	for (int kant=0 ; kant<number ; kant++) {
+		if (kant !=0) {
+			if (tar==0) omega -= step;
+			else       lambda -= step;
+		}
+
+	if (rank==0) {
+	  if (tar==0)
+	    cout << "Computation with omega = " << omega << endl;
+	  else
+	    cout << "Computation with lambda = " << lambda << " (omega fixed " << omega << ")" << endl;
+	}
 
       Scalar one (space) ;
       one = 1 ;
@@ -71,7 +100,8 @@ int main(int argc, char** argv) {
 
       syst.add_cst ("rsint", rsint) ;
       syst.add_cst ("k", kk) ;
-      syst.add_cst ("qpi", qpi) ;
+	syst.add_cst ("qpi", qpi) ;
+	syst.add_cst ("lambda", lambda) ;
 
       syst.add_def ("phisurrsint = divrsint(phi)") ;
       syst.add_def ("ap = exp(nu)") ;
@@ -79,10 +109,10 @@ int main(int argc, char** argv) {
       syst.add_def ("B = (divrsint(incB) + 1)/ap") ;
       syst.add_def ("A = exp(incA - nu)") ;
       
-      syst.add_def ("E = 0.5*(ome-bt*k)^2/ap^2*phi^2 + 0.5*scal(grad(phi),grad(phi))/A^2 + 0.5*phi^2 + 0.5*k*k*phisurrsint*phisurrsint/B^2") ;
+	syst.add_def ("E = 0.5*(ome-bt*k)^2/ap^2*phi^2 + 0.5*scal(grad(phi),grad(phi))/A^2 + 0.5*phi^2 + 0.25*lambda*phi^4 + 0.5*k*k*phisurrsint*phisurrsint/B^2") ;
       syst.add_def ("Pp = k/ap* (ome-bt*k)*phi^2") ;
-      syst.add_def ("S = -0.5*scal(grad(phi), grad(phi))/A^2 - 0.5*k*k*phisurrsint*phisurrsint/B^2 + 1.5*(ome-bt*k)^2/ap^2 * phi^2- 1.5*phi^2") ;
-      syst.add_def ("Spp = 0.5*(ome-bt*k)^2/ap^2*phi^2 -0.5* scal(grad(phi),grad(phi))/A^2 -0.5* phi^2 +0.5* k*k*phisurrsint*phisurrsint/B^2") ;
+	syst.add_def ("S = -0.5*scal(grad(phi), grad(phi))/A^2 - 0.5*k*k*phisurrsint*phisurrsint/B^2 + 1.5*(ome-bt*k)^2/ap^2 * phi^2- 1.5*phi^2 -0.75*lambda*phi^4") ;
+	syst.add_def ("Spp = 0.5*(ome-bt*k)^2/ap^2*phi^2 -0.5* scal(grad(phi),grad(phi))/A^2 -0.5* phi^2 -0.25*lambda*phi^4 +0.5* k*k*phisurrsint*phisurrsint/B^2") ;
        
 	  for (int d=0 ; d<ndom-1 ; d++)
 	  syst.add_def (d, "eqB = lap2(incB) -2*qpi*ap*A^2*B*rsint*(S-Spp)") ;
@@ -107,9 +137,9 @@ int main(int argc, char** argv) {
  
 	syst.add_def ("print = lap2(incA)") ;
 
-          for (int d=0 ; d<ndom-1 ; d++)
-	syst.add_def (d, "eqphi = lap(phi) - A^2*(1-ome*ome/ap^2+2*bt/ap^2*ome*k-bt^2/ap^2*k*k)*phi + scal(grad(phi),grad(nu+log(B))) - divrsint(A^2/B^2 -1)*divrsint(phi)*k*k") ;
-      syst.add_def (ndom-1, "eqphi = lap(phi) - A^2*(1-ome*ome/ap^2+2*bt/ap^2*ome*k-bt^2/ap^2*k*k)*phi + scal(grad(phi),grad(nu+log(B))) - k*k*divrsint(A^2/B^2-1)*divrsint(phi)") ;
+		    for (int d=0 ; d<ndom-1 ; d++)
+		syst.add_def (d, "eqphi = lap(phi) - A^2*(1 + lambda*phi^2 -ome*ome/ap^2+2*bt/ap^2*ome*k-bt^2/ap^2*k*k)*phi + scal(grad(phi),grad(nu+log(B))) - divrsint(A^2/B^2 -1)*divrsint(phi)*k*k") ;
+		syst.add_def (ndom-1, "eqphi = lap(phi) - A^2*(1 + lambda*phi^2 -ome*ome/ap^2+2*bt/ap^2*ome*k-bt^2/ap^2*k*k)*phi + scal(grad(phi),grad(nu+log(B))) - k*k*divrsint(A^2/B^2-1)*divrsint(phi)") ;
   
       
       space.add_eq (syst, "eqB=0", "incB", "dn(incB)") ; 
@@ -140,11 +170,12 @@ int main(int argc, char** argv) {
 	if (rank==0) {
 	
 		char name[100] ;
-		sprintf (name, "bos_%d_%f.dat", kk, omega) ;
+		sprintf (name, "bos_%d_%f_%f.dat", kk, omega, lambda) ;
 		FILE* fiche = fopen (name, "w") ;
 		space.save(fiche) ;
 		fwrite_be (&kk, sizeof(int), 1, fiche) ;
 		fwrite_be (&omega, sizeof(double), 1, fiche) ;
+		fwrite_be (&lambda, sizeof(double), 1, fiche ) ;
 		nu.save(fiche) ;
 		incA.save(fiche) ;
 		incB.save(fiche) ;
