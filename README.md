@@ -8,10 +8,10 @@
   - `msol.cpp`：轴对称参数扫描（内部配置输入文件、tar=0 扫 omega，tar=1 扫 lambda）
 - `src/solvers/spherical/`
   - `sph.cpp`：球对称玻色星求解（始终写出 lambda）
-- `src/tools/analysis/reader.cpp`：读取解并计算 ADM/Komar/J（自动判型轴/球）
+- `src/tools/analysis/reader.cpp`：读取解并计算 ADM/Komar/J（自动判型轴/球，输入路径在源码顶部配置）
 - `src/tools/output/dataout.cpp`：轴对称场 2D 导出
 - `src/tools/output/sphdataout.cpp`：球对称导出
-- `src/tools/convert/convert_old_to_new.cpp`：旧格式转新格式（补写 lambda）
+- `src/tools/convert/convert_old_to_new.cpp`：旧格式转新格式（补写 lambda，输入/输出路径在源码顶部配置）
 - `src/utils/io_commons.hpp`：统一读写/判型 I/O 辅助
 - `src/archive/`：备份文件（rbscopy, msolcopy）
 
@@ -34,15 +34,9 @@
 - 扫描轴对称：`out/build/bin/msol`（在源码顶部配置 `input_file/tar/step/number`，无需命令行参数）
 - 求解球对称：`out/build/bin/sph`
 - 转换旧数据：
-  ```bash
-  out/build/bin/convert_old_to_new <old.dat> [output.dat] [lambda_override]
-  ```
-  默认输出到 `src/tools/converted/<basename>.dat`，若旧文件无 lambda 则补 0 或使用覆盖值。
+  - 在 `src/tools/convert/convert_old_to_new.cpp` 顶部修改 `input` / `output` / `lambda_override` 配置，重新编译后直接运行 `out/build/bin/convert_old_to_new`；若旧文件无 lambda 则补 0 或使用覆盖值。
 - 读取与物理量：
-  ```bash
-  out/build/bin/reader <solution.dat>
-  ```
-  自动判定轴/球，轴对称输出 ADM/Komar/Js/Jv。
+  - 在 `src/tools/analysis/reader.cpp` 顶部修改 `input` 路径，重新编译后直接运行 `out/build/bin/reader`；自动判定轴/球，轴对称输出 ADM/Komar/Js/Jv。
 - 导出轴对称切片：`out/build/bin/dataout <solution.dat>` 生成 `metricfields_2d.txt`
 - 导出球对称切片：`out/build/bin/sphdataout <solution.dat>` 生成 `sphresult.txt`
 
