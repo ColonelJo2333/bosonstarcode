@@ -24,7 +24,7 @@ inline SolutionKind detect_kind(const char* path, int& kk_guess) {
     (void)space;
     long pos = ftell(f);
     int kk = 0;
-    size_t r = fread_be(&kk, sizeof(int), 1, f);
+    size_t r = Kadath::fread_be(&kk, sizeof(int), 1, f);
     fclose(f);
     kk_guess = kk;
     if (r == 1 && std::abs(kk) <= KK_MAX_ABS) {
@@ -47,17 +47,27 @@ inline void load_axisymmetric(const char* path, double lambda_default, Fn&& fn) 
     double omega = 0.0;
     double lambda = lambda_default;
 
-    if (fread_be(&kk, sizeof(int), 1, f) != 1)
+    if (Kadath::fread_be(&kk, sizeof(int), 1, f) != 1)
         throw std::runtime_error("Failed to read kk");
-    if (fread_be(&omega, sizeof(double), 1, f) != 1)
+    if (Kadath::fread_be(&omega, sizeof(double), 1, f) != 1)
         throw std::runtime_error("Failed to read omega");
 
     long pos = ftell(f);
     double lambda_probe = lambda_default;
     bool has_lambda = false;
-    if (fread_be(&lambda_probe, sizeof(double), 1, f) == 1 && looks_like_lambda(lambda_probe)) {
-        lambda = lambda_probe;
-        has_lambda = true;
+    if (Kadath::fread_be(&lambda_probe, sizeof(double), 1, f) == 1 && looks_like_lambda(lambda_probe)) {
+        long after_lambda = ftell(f);
+        int base_flag = 0;
+        int ndim_flag = 0;
+        bool peek_ok = Kadath::fread_be(&base_flag, sizeof(int), 1, f) == 1 &&
+                       Kadath::fread_be(&ndim_flag, sizeof(int), 1, f) == 1;
+        if (peek_ok && (base_flag == 0 || base_flag == 1) && ndim_flag == space.get_ndim()) {
+            lambda = lambda_probe;
+            has_lambda = true;
+            fseek(f, after_lambda, SEEK_SET);
+        } else {
+            fseek(f, pos, SEEK_SET);
+        }
     } else {
         fseek(f, pos, SEEK_SET);
     }
@@ -82,15 +92,25 @@ inline void load_spherical(const char* path, double lambda_default, Fn&& fn) {
     double omega = 0.0;
     double lambda = lambda_default;
 
-    if (fread_be(&omega, sizeof(double), 1, f) != 1)
+    if (Kadath::fread_be(&omega, sizeof(double), 1, f) != 1)
         throw std::runtime_error("Failed to read omega");
 
     long pos = ftell(f);
     double lambda_probe = lambda_default;
     bool has_lambda = false;
-    if (fread_be(&lambda_probe, sizeof(double), 1, f) == 1 && looks_like_lambda(lambda_probe)) {
-        lambda = lambda_probe;
-        has_lambda = true;
+    if (Kadath::fread_be(&lambda_probe, sizeof(double), 1, f) == 1 && looks_like_lambda(lambda_probe)) {
+        long after_lambda = ftell(f);
+        int base_flag = 0;
+        int ndim_flag = 0;
+        bool peek_ok = Kadath::fread_be(&base_flag, sizeof(int), 1, f) == 1 &&
+                       Kadath::fread_be(&ndim_flag, sizeof(int), 1, f) == 1;
+        if (peek_ok && (base_flag == 0 || base_flag == 1) && ndim_flag == space.get_ndim()) {
+            lambda = lambda_probe;
+            has_lambda = true;
+            fseek(f, after_lambda, SEEK_SET);
+        } else {
+            fseek(f, pos, SEEK_SET);
+        }
     } else {
         fseek(f, pos, SEEK_SET);
     }
@@ -116,9 +136,9 @@ inline void save_axisymmetric(const char* path,
     FILE* f = fopen(path, "w");
     if (!f) throw std::runtime_error(std::string("Cannot open for write: ") + path);
     space.save(f);
-    fwrite_be(&kk, sizeof(int), 1, f);
-    fwrite_be(&omega, sizeof(double), 1, f);
-    fwrite_be(&lambda, sizeof(double), 1, f);
+    Kadath::fwrite_be(&kk, sizeof(int), 1, f);
+    Kadath::fwrite_be(&omega, sizeof(double), 1, f);
+    Kadath::fwrite_be(&lambda, sizeof(double), 1, f);
     nu.save(f);
     incA.save(f);
     incB.save(f);
@@ -137,8 +157,8 @@ inline void save_spherical(const char* path,
     FILE* f = fopen(path, "w");
     if (!f) throw std::runtime_error(std::string("Cannot open for write: ") + path);
     space.save(f);
-    fwrite_be(&omega, sizeof(double), 1, f);
-    fwrite_be(&lambda, sizeof(double), 1, f);
+    Kadath::fwrite_be(&omega, sizeof(double), 1, f);
+    Kadath::fwrite_be(&lambda, sizeof(double), 1, f);
     psi.save(f);
     nu.save(f);
     phi.save(f);

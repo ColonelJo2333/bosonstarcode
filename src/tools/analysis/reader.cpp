@@ -10,12 +10,11 @@ static void usage(const char* prog) {
 }
 
 int main(int argc, char** argv) {
-	if (argc < 2) {
-		usage(argv[0]);
-		return 1;
-	}
+	(void)argc;
+	(void)argv;
 
-	const char* input = argv[1];
+	// 配置：在此修改要读取的解文件路径
+	const char* input = "/home/chenhuhuhu/vscodedev/src/tools/converted/bos_1_0.798905_0.dat";
 
 	try {
 		int kk_guess = 0;
