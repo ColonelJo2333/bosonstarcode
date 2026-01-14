@@ -1,7 +1,0 @@
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/rbs.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/msol.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/sph.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/reader.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/convert_old_to_new.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/edit_cache.dir
-/home/chenhuhuhu/dev-PDE/out/build/Kdev/CMakeFiles/rebuild_cache.dir
