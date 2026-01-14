@@ -1,0 +1,96 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "BosonStarCode",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "convert_old_to_new::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-convert_old_to_new-Debug-a972ee63b5d9d9f9fce0.json",
+					"name" : "convert_old_to_new",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "msol::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-msol-Debug-49482aaf113df31471a0.json",
+					"name" : "msol",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "rbs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-rbs-Debug-50d2554de21a408663ff.json",
+					"name" : "rbs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "reader::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-reader-Debug-513f76602e9494dd514b.json",
+					"name" : "reader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sph::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sph-Debug-23700ac5aab32c2e5a2a.json",
+					"name" : "sph",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/chenhuhuhu/dev-PDE/out/build/Kdev",
+		"source" : "/home/chenhuhuhu/dev-PDE"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
